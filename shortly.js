@@ -18,15 +18,32 @@ app.configure(function() {
   app.set('view engine', 'ejs');
   app.use(partials());
   app.use(express.json());
+  app.use(express.cookieParser());
+  app.use(express.cookieSession({
+    secret: 'usesinglequotes',
+    key: 'sid',
+    cookie: {
+      maxAge: 60000
+    }
+  }));
   app.use(express.urlencoded());
   app.use(express.static(__dirname + '/public'));
 });
 
-app.get('/', function(req, res) {
+var restrict  = function (req, res, next) {
+  if (req.session.username) {
+    next();
+  } else {
+    req.session.error = 'Access denied!';
+    res.redirect('/login');
+  }
+};
+
+app.get('/', restrict, function(req, res) {
   res.render('index');
 });
 
-app.get('/create', function(req, res) {
+app.get('/create', restrict, function(req, res) {
   res.render('index');
 });
 
@@ -94,6 +111,7 @@ app.post('/signup', function(req, res){
       });
 
       user.hashStore().then(function () {
+        req.session.username = user.get('username');
         res.redirect('/');
       });
 
