@@ -1,5 +1,6 @@
 var db = require('../config');
 var Click = require('./click');
+var User = require('./user'); // TODO:
 var crypto = require('crypto');
 
 var Link = db.Model.extend({
@@ -9,6 +10,7 @@ var Link = db.Model.extend({
     visits: 0
   },
   clicks: function() {
+    this.belongsTo(User, 'user_id'); // TODO: this might be wrong
     return this.hasMany(Click);
   },
   initialize: function(){
