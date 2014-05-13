@@ -93,6 +93,30 @@ app.get('/login', function(req, res) {
   res.render('login');
 });
 
+app.post('/login', function(req, res) {
+  new User({
+    username: req.body.username
+  }).fetch().then(function(found) {
+    if(found) {
+
+      bcrypt.compareAsync(req.body.password, found.get('password'))
+        .then(function(same){
+          if (same) {
+            req.session.username = found.get('username');
+            res.redirect('/');
+          } else {
+            res.redirect('/login');
+          }
+        });
+
+    } else {
+      // user not found
+      res.redirect('/login');
+    }
+
+  });
+});
+
 app.get('/signup', function(req, res) {
   res.render('signup');
 });
