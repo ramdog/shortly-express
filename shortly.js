@@ -79,17 +79,18 @@ app.post('/signup', function(req, res){
     username: req.body.username
   }).fetch().then(function(found) {
     if(found) {
-      res.send(200, found.attributes);
+      res.redirect('/login');
     } else {
+
       var user = new User({
         username: req.body.username,
         password: req.body.password
       });
 
-      user.save().then(function(newUser) {
-        //res.send(200, newUser);
+      user.hashStore().then(function () {
         res.redirect('/');
       });
+
     }
   });
 });
