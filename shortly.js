@@ -53,7 +53,7 @@ app.get('/links', function(req, res) {
   });
 });
 
-app.post('/links', function(req, res) {
+app.post('/links', restrict, function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
@@ -71,16 +71,22 @@ app.post('/links', function(req, res) {
           return res.send(404);
         }
 
-        var link = new Link({
-          url: uri,
-          title: title,
-          base_url: req.headers.origin
-        });
+        db.knex('users')
+          .where('username', '=', req.session.username)
+          .then(function(user) {
+            console.log(user);
+            var link = new Link({
+              url: uri,
+              title: title,
+              base_url: req.headers.origin,
+              user_id: user[0].id
+            });
 
-        link.save().then(function(newLink) {
-          Links.add(newLink);
-          res.send(200, newLink);
-        });
+            link.save().then(function(newLink) {
+              Links.add(newLink);
+              res.send(200, newLink);
+            });
+          });
       });
     }
   });
