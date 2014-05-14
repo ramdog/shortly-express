@@ -51,10 +51,20 @@ app.get('/create', restrict, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
+app.get('/links', restrict, function(req, res) {
+  db.knex('users')
+    .where('username', '=', req.session.username)
+    .then(function(user) {
+      console.log(user);
+      Links
+        .reset()
+        .query({where: {user_id: user[0].id}})
+        .fetch()
+        .then(function(links) {
+        res.send(200, links.models);
+      });
+    });
+
 });
 
 app.post('/links', restrict, function(req, res) {
@@ -65,20 +75,20 @@ app.post('/links', restrict, function(req, res) {
     return res.send(404);
   }
 
-  new Link({ url: uri }).fetch().then(function(found) {
-    if (found) {
-      res.send(200, found.attributes);
-    } else {
-      util.getUrlTitle(uri, function(err, title) {
-        if (err) {
-          console.log('Error reading URL heading: ', err);
-          return res.send(404);
-        }
+  db.knex('users')
+    .where('username', '=', req.session.username)
+    .then(function(user) {
 
-        db.knex('users')
-          .where('username', '=', req.session.username)
-          .then(function(user) {
-            console.log(user);
+      new Link({ url: uri, user_id: user[0].id }).fetch().then(function(found) {
+        if (found) {
+          res.send(200, found.attributes);
+        } else {
+          util.getUrlTitle(uri, function(err, title) {
+            if (err) {
+              console.log('Error reading URL heading: ', err);
+              return res.send(404);
+            }
+
             var link = new Link({
               url: uri,
               title: title,
@@ -90,10 +100,11 @@ app.post('/links', restrict, function(req, res) {
               Links.add(newLink);
               res.send(200, newLink);
             });
+
           });
+        }
       });
-    }
-  });
+    });
 });
 
 /************************************************************/
