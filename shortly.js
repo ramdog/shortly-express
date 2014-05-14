@@ -19,11 +19,11 @@ app.configure(function() {
   app.use(partials());
   app.use(express.json());
   app.use(express.cookieParser());
-  app.use(express.cookieSession({
+  app.use(express.session({
     secret: 'usesinglequotes',
     key: 'sid',
     cookie: {
-      maxAge: 60000
+      maxAge: 600000
     }
   }));
   app.use(express.urlencoded());
