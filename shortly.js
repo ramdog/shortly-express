@@ -32,7 +32,11 @@ app.configure(function() {
 
 var restrict  = function (req, res, next) {
   if (req.session.username) {
-    next();
+    var username = req.session.username;
+    req.session.regenerate(function() {
+      req.session.username = username;
+      next();
+    });
   } else {
     req.session.error = 'Access denied!';
     res.redirect('/login');
@@ -97,6 +101,12 @@ app.post('/links', restrict, function(req, res) {
 /************************************************************/
 app.get('/login', function(req, res) {
   res.render('login');
+});
+
+app.get('/logout', function(req, res) {
+  req.session.destroy(function(){
+    res.redirect('/');
+  });
 });
 
 app.post('/login', function(req, res) {
