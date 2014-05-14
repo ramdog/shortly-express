@@ -51,11 +51,10 @@ app.get('/create', restrict, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', restrict, function(req, res) {
+app.get('/links', function(req, res) {
   db.knex('users')
     .where('username', '=', req.session.username)
     .then(function(user) {
-      console.log(user);
       Links
         .reset()
         .query({where: {user_id: user[0].id}})
